@@ -10,9 +10,6 @@ cap = cv2.VideoCapture(0)
 model = load_model("MNIST.h5") # 学習済みモデルをロード
 
 while(True):
-    Xt = []
-    Yt = []
-    
     ret, frame = cap.read()
     h, w, _ = frame.shape[:3]
 
@@ -29,8 +26,15 @@ while(True):
         if h < 20: continue
         red = (0, 0, 255)
         cv2.rectangle(frame, (x, y), (x+w, y+h), red, 2)
-        im = frame[y-(h/2):y+(h/2), x-(w/2):x+(w/2)]
+        if h >= w:
+            l = h
+        else:
+            l = w
+        im = frame[y:y+l, x:x+l]
         im = cv2.resize(im,(28, 28), cv2.INTER_CUBIC) # 訓練データと同じサイズに整形
+
+        Xt = []
+        Yt = []
 
         Xt.append(im)
         Xt = np.array(Xt)/255
@@ -40,12 +44,8 @@ while(True):
             r = round(result[0,i], 2)
             Yt.append([i, r])
             Yt = sorted(Yt, key=lambda x:(x[1]))
+        cv2.putText(frame, "1:"+str(Yt[9]), (x,y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255), 1, cv2.LINE_AA)
 
-
-    # 判定結果を上位3番目まで表示させる
-    cv2.putText(frame, "1:"+str(Yt[9]), (10,80), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255), 1, cv2.LINE_AA)
-    cv2.putText(frame, "2:"+str(Yt[8]), (10,110), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255), 1, cv2.LINE_AA)
-    cv2.putText(frame, "3:"+str(Yt[7]), (10,140), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255), 1, cv2.LINE_AA)
     cv2.imshow("frame",frame) # カメラ画像を表示
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
