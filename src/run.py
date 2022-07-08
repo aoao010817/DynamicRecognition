@@ -20,9 +20,9 @@ while(True):
 
     # 輪郭抽出
     contours = cv2.findContours(
-    th, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[0]
+    th, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[0]  #ここで猫食べてる
     for moji in contours:
-        x, y, w, h = cv2.boundingRect(moji)
+        x, y, w, h = cv2.boundingRect(moji) #ここは犬を食べるところ
         if h < 20: continue
         red = (0, 0, 255)
         cv2.rectangle(frame, (x, y), (x+w, y+h), red, 2)
