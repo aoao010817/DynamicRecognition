@@ -12,32 +12,35 @@ model = load_model("MNIST.h5") # 学習済みモデルをロード
 while(True):
     Xt = []
     Yt = []
-
+    
     ret, frame = cap.read()
-
     h, w, _ = frame.shape[:3]
 
-    w_center = w//2
-    h_center = h//2
-
-    cv2.rectangle(frame, (w_center-71, h_center-71), (w_center+71, h_center+71),(255, 0, 0))
-
-    # カメラ画像の整形
-    im = frame[h_center-70:h_center+70, w_center-70:w_center+70] # トリミング
-    im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+    im = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
     _, th = cv2.threshold(im, 0, 255, cv2.THRESH_OTSU) # 2値化
     th = cv2.bitwise_not(th) # 白黒反転
     th = cv2.GaussianBlur(th,(9,9), 0) # ガウスブラーをかけて補間
-    th = cv2.resize(th,(28, 28), cv2.INTER_CUBIC) # 訓練データと同じサイズに整形
 
-    Xt.append(th)
-    Xt = np.array(Xt)/255
+    # 輪郭抽出
+    contours = cv2.findContours(
+    th, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[0]
+    for moji in contours:
+        x, y, w, h = cv2.boundingRect(moji)
+        if h < 20: continue
+        red = (0, 0, 255)
+        cv2.rectangle(frame, (x, y), (x+w, y+h), red, 2)
+        im = frame[y-(h/2):y+(h/2), x-(w/2):x+(w/2)]
+        im = cv2.resize(im,(28, 28), cv2.INTER_CUBIC) # 訓練データと同じサイズに整形
 
-    result = model.predict(Xt, batch_size=1) # 判定,ソート
-    for i in range(10):
-        r = round(result[0,i], 2)
-        Yt.append([i, r])
-        Yt = sorted(Yt, key=lambda x:(x[1]))
+        Xt.append(im)
+        Xt = np.array(Xt)/255
+
+        result = model.predict(Xt, batch_size=1) # 判定,ソート
+        for i in range(10):
+            r = round(result[0,i], 2)
+            Yt.append([i, r])
+            Yt = sorted(Yt, key=lambda x:(x[1]))
+
 
     # 判定結果を上位3番目まで表示させる
     cv2.putText(frame, "1:"+str(Yt[9]), (10,80), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,255), 1, cv2.LINE_AA)
