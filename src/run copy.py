@@ -5,7 +5,7 @@ import cv2
 
 # カメラから画像を取得して,リアルタイムに手書き数字を判別させる。
 # 動画表示
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
 model = load_model("MNIST.h5") # 学習済みモデルをロード
 
@@ -37,6 +37,9 @@ while(True):
     Xt.append(th)
     Xt = np.array(Xt)/255
 
+    print(th.shape)
+    exit()
+
     result = model.predict(Xt, batch_size=1) # 判定,ソート
     for i in range(10):
         r = round(result[0,i], 2)
@@ -50,9 +53,8 @@ while(True):
     cv2.imshow("frame",frame) # カメラ画像を表示
 
     k =  cv2.waitKey(1) & 0xFF # キーが押下されるのを待つ。1秒置き。64ビットマシンの場合,& 0xFFが必要
-    prop_val = cv2.getWindowProperty("frame", cv2.WND_PROP_ASPECT_RATIO) # アスペクト比を取得
 
-    if k == ord("q") or (prop_val < 0): # 終了処理
+    if k == ord("q"): # 終了処理
         break
 
 cap.release() # カメラを解放

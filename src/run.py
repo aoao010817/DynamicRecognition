@@ -15,22 +15,24 @@ while(True):
 
     im = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
     _, th = cv2.threshold(im, 0, 255, cv2.THRESH_OTSU) # 2値化
-    th = cv2.bitwise_not(th) # 白黒反転
-    th = cv2.GaussianBlur(th,(9,9), 0) # ガウスブラーをかけて補間
 
     # 輪郭抽出
-    contours = cv2.findContours(
-    th, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[0]  #ここで猫食べてる
+    contours = cv2.findContours(th, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[0]
     for moji in contours:
-        x, y, w, h = cv2.boundingRect(moji) #ここは犬を食べるところ
-        if h < 20: continue
+        x, y, w, h = cv2.boundingRect(moji)
+        if h < 30 or w < 30: continue
         red = (0, 0, 255)
         cv2.rectangle(frame, (x, y), (x+w, y+h), red, 2)
         if h >= w:
             l = h
         else:
             l = w
+        l = l + (28-l%28)
+
+        
         im = frame[y:y+l, x:x+l]
+        im = cv2.bitwise_not(th) # 白黒反転
+        im = cv2.GaussianBlur(th,(9,9), 0) # ガウスブラーをかけて補間
         im = cv2.resize(im,(28, 28), cv2.INTER_CUBIC) # 訓練データと同じサイズに整形
 
         Xt = []
