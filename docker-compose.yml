@@ -3,7 +3,7 @@ version: '3'
 services:
   python:
     build: ./
-    container_name: jetson-mnist-container 
+    container_name: dynamic-recognition-container 
     volumes:
       - ./src:/src
     working_dir: /src
